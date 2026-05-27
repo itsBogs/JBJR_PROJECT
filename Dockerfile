@@ -1,52 +1,50 @@
-FROM php:8.2
-
-ARG DEBIAN_FRONTEND=noninteractive
+FROM php:8.2-apache
 
 # Install system dependencies
-RUN apt-get update && apt-get install -y --no-install-recommends \
-        $PHPIZE_DEPS \
-        pkg-config \
-        ca-certificates \
-        git \
-        unzip \
-        curl \
-        zip \
-        libzip-dev \
-        libpng-dev \
-        libjpeg62-turbo-dev \
-        libfreetype6-dev \
-        libonig-dev \
-        libxml2-dev \
-        libcurl4-openssl-dev \
-        libicu-dev \
-    && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y \
+    libpng-dev \
+    libjpeg-dev \
+    libfreetype6-dev \
+    libzip-dev \
+    libonig-dev \
+    libxml2-dev \
+    unzip \
+    git \
+    curl \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install pdo_mysql mbstring exif gd zip
+
+# Enable Apache mod_rewrite
+RUN a2enmod rewrite
 
 # Install Node.js
 RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
     apt-get install -y nodejs
 
-# Install PHP extensions
-RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install -j$(nproc) gd pdo_mysql zip mbstring exif bcmath intl curl
-
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-WORKDIR /var/www
+WORKDIR /var/www/html
 
-# Copy application files
+# Copy project files
 COPY . .
 
+# Set Apache DocumentRoot to public
+ENV APACHE_DOCUMENT_ROOT /var/www/html/public
+RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/000-default.conf
+RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf
+
 # Install dependencies
-RUN composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
+RUN composer install --no-dev --optimize-autoloader --no-interaction
 RUN npm install && npm run build
 
 # Permissions
-RUN mkdir -p storage/framework/{sessions,views,cache} bootstrap/cache \
-    && chown -R www-data:www-data storage bootstrap/cache \
-    && chmod -R 775 storage bootstrap/cache
+RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache \
+    && chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
 
-EXPOSE 10000
+# Render uses $PORT, Apache uses 80 by default. Sync them.
+RUN sed -i 's/80/${PORT}/g' /etc/apache2/ports.conf /etc/apache2/sites-available/000-default.conf
 
-# Simplest startup possible to ensure the site loads
-CMD php artisan serve --host=0.0.0.0 --port=${PORT:-10000}
+# Startup command
+CMD php artisan config:clear && \
+    apache2-foreground
