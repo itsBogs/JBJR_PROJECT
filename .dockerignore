@@ -9,5 +9,4 @@
 /storage/framework/sessions/*
 /storage/framework/views/*
 /storage/logs/*
-Dockerfile
 .phpunit.result.cache
