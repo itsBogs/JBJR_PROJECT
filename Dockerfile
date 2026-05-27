@@ -46,5 +46,4 @@ RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cac
 RUN sed -i 's/80/${PORT}/g' /etc/apache2/ports.conf /etc/apache2/sites-available/000-default.conf
 
 # Startup command
-CMD php artisan config:clear && \
-    apache2-foreground
+CMD apache2-foreground
