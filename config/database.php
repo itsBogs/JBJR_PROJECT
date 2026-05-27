@@ -2,6 +2,10 @@
 
 use Illuminate\Support\Str;
 
+$cleanEnv = static function (string $key, string $default): string {
+    return trim(preg_replace('/[\x{200B}-\x{200D}\x{FEFF}]/u', '', (string) env($key, $default)));
+};
+
 return [
 
     /*
@@ -16,7 +20,7 @@ return [
     |
     */
 
-    'default' => env('DB_CONNECTION', 'sqlite'),
+    'default' => $cleanEnv('DB_CONNECTION', 'sqlite'),
 
     /*
     |--------------------------------------------------------------------------

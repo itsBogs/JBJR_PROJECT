@@ -1,5 +1,9 @@
 <?php
 
+$cleanEnv = static function (string $key, string $default): string {
+    return trim(preg_replace('/[\x{200B}-\x{200D}\x{FEFF}]/u', '', (string) env($key, $default)));
+};
+
 return [
 
     /*
@@ -13,7 +17,7 @@ return [
     |
     */
 
-    'default' => env('QUEUE_CONNECTION', 'database'),
+    'default' => $cleanEnv('QUEUE_CONNECTION', 'database'),
 
     /*
     |--------------------------------------------------------------------------
@@ -103,7 +107,7 @@ return [
     */
 
     'batching' => [
-        'database' => env('DB_CONNECTION', 'sqlite'),
+        'database' => $cleanEnv('DB_CONNECTION', 'sqlite'),
         'table' => 'job_batches',
     ],
 
@@ -122,7 +126,7 @@ return [
 
     'failed' => [
         'driver' => env('QUEUE_FAILED_DRIVER', 'database-uuids'),
-        'database' => env('DB_CONNECTION', 'sqlite'),
+        'database' => $cleanEnv('DB_CONNECTION', 'sqlite'),
         'table' => 'failed_jobs',
     ],
 

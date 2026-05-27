@@ -2,6 +2,10 @@
 
 use Illuminate\Support\Str;
 
+$cleanEnv = static function (string $key, string $default): string {
+    return trim(preg_replace('/[\x{200B}-\x{200D}\x{FEFF}]/u', '', (string) env($key, $default)));
+};
+
 return [
 
     /*
@@ -15,7 +19,7 @@ return [
     |
     */
 
-    'default' => env('CACHE_STORE', 'database'),
+    'default' => $cleanEnv('CACHE_STORE', 'database'),
 
     /*
     |--------------------------------------------------------------------------
