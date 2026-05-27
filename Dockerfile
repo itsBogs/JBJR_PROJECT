@@ -48,8 +48,5 @@ RUN mkdir -p storage/framework/{sessions,views,cache} bootstrap/cache \
 
 EXPOSE 10000
 
-# Startup script to handle migrations and serve
-# Updated: May 27, 2026 - Triggering fresh Render build
-CMD php artisan migrate --force || echo "Migration failed, skipping..." && \
-    php artisan db:seed --force --no-interaction || echo "Seeding failed, skipping..." && \
-    php artisan serve --host=0.0.0.0 --port=${PORT:-10000}
+# Simplest startup possible to ensure the site loads
+CMD php artisan serve --host=0.0.0.0 --port=${PORT:-10000}
