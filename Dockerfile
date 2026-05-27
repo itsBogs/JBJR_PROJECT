@@ -42,8 +42,11 @@ RUN npm install && npm run build
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache \
     && chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
 
-# Render uses $PORT, Apache uses 80 by default. Sync them.
-RUN sed -i 's/80/${PORT}/g' /etc/apache2/ports.conf /etc/apache2/sites-available/000-default.conf
+# Fix Apache Port for Render at runtime
+RUN sed -i 's/Listen 80/Listen 10000/g' /etc/apache2/ports.conf \
+    && sed -i 's/:80/:10000/g' /etc/apache2/sites-available/000-default.conf
 
 # Startup command
-CMD apache2-foreground
+CMD php artisan config:clear && \
+    php artisan view:clear && \
+    apache2-foreground
