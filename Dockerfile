@@ -1,3 +1,12 @@
+# Stage 1: Build Assets
+FROM node:20 AS node-builder
+WORKDIR /app
+COPY package*.json ./
+RUN npm install
+COPY . .
+RUN npm run build
+
+# Stage 2: Final PHP Image
 FROM php:8.2-apache
 
 # Install system dependencies
@@ -17,26 +26,24 @@ RUN apt-get update && apt-get install -y \
 # Enable Apache mod_rewrite
 RUN a2enmod rewrite
 
-# Install Node.js
-RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
-    apt-get install -y nodejs
-
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 WORKDIR /var/www/html
 
-# Copy project files
+# Copy Project Files
 COPY . .
+
+# Copy Built Assets from Node Stage to reduce memory usage
+COPY --from=node-builder /app/public/build ./public/build
 
 # Set Apache DocumentRoot to public
 ENV APACHE_DOCUMENT_ROOT /var/www/html/public
 RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/000-default.conf
 RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf
 
-# Install dependencies
+# Install dependencies (Optimized)
 RUN composer install --no-dev --optimize-autoloader --no-interaction
-RUN npm install && npm run build
 
 # Permissions
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache \
