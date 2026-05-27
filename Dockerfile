@@ -1,15 +1,6 @@
-# Stage 1: Build Assets
-FROM node:20 AS node-builder
-WORKDIR /app
-COPY package*.json ./
-RUN npm install
-COPY . .
-RUN npm run build
-
-# Stage 2: Final PHP Image
 FROM php:8.2-apache
 
-# Install system dependencies
+# Install system dependencies (No Node.js needed now!)
 RUN apt-get update && apt-get install -y \
     libpng-dev \
     libjpeg-dev \
@@ -37,23 +28,20 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 WORKDIR /var/www/html
 
-# Copy application files
+# Copy application files (includes pre-built public/build)
 COPY . .
 
-# Copy built assets from Stage 1
-COPY --from=node-builder /app/public/build ./public/build
-
-# Install PHP dependencies
-RUN composer install --no-dev --optimize-autoloader --no-interaction
+# Install PHP dependencies (Optimized)
+RUN composer install --no-dev --optimize-autoloader --no-interaction --no-scripts
 
 # Permissions
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache \
     && chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
 
-# Port configuration: Use $PORT provided by Render
+# Port configuration
 RUN sed -i 's/80/${PORT}/g' /etc/apache2/ports.conf /etc/apache2/sites-available/000-default.conf
 
-# Ensure config is ready at runtime
+# Runtime commands
 CMD php artisan config:clear && \
-    php artisan view:clear && \
+    php artisan cache:clear && \
     apache2-foreground
