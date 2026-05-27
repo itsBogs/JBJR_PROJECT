@@ -40,6 +40,7 @@ class DashboardController extends Controller
         $courseCount = Course::count();
         $postCount = Post::count();
         
+        $recentStudents = Student::with('degree')->latest()->take(5)->get();
         $students = Student::with(['degree'])
             ->latest()
             ->take(10)
@@ -50,6 +51,7 @@ class DashboardController extends Controller
             'studentCount' => $studentCount,
             'courseCount' => $courseCount,
             'postCount' => $postCount,
+            'recentStudents' => $recentStudents,
             'students' => $students
         ]);
     }
