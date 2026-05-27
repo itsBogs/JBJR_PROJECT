@@ -17,7 +17,7 @@ class UserProfileSeeder extends Seeder
             'email' => 'jaysonbogs.ramos@example.com',
         ], [
             'name' => 'Jayson Bogs Ramos',
-            'password' => bcrypt('password123'), // Change password as needed
+            'password' => 'password123',
             'avatar' => 'avatar.png', // Place avatar.png in public/images/
         ]);
 

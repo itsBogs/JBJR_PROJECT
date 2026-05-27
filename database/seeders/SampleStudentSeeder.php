@@ -15,17 +15,19 @@ class SampleStudentSeeder extends Seeder
             'degree_title' => 'Bachelor of Science in Information Technology',
         ]);
 
-        $userAccount = UserAccount::updateOrCreate(
-            ['email' => 'jayson.bogs.jimenez.ramos@example.com'],
-            [
-                'username' => 'jaysonramos',
-                'password' => 'student123',
-                'role' => 'student',
-                'is_active' => true,
-                'must_change_password' => false,
-                'avatar' => 'images/logo.png',
-            ]
-        );
+        $userAccount = UserAccount::where('username', 'jaysonramos')
+            ->orWhere('email', 'jayson.bogs.jimenez.ramos@example.com')
+            ->first() ?? new UserAccount();
+
+        $userAccount->fill([
+            'username' => 'jaysonramos',
+            'email' => 'jayson.bogs.jimenez.ramos@example.com',
+            'password' => 'student123',
+            'role' => 'student',
+            'is_active' => true,
+            'must_change_password' => false,
+            'avatar' => 'images/logo.png',
+        ])->save();
 
         Student::updateOrCreate(
             ['user_account_id' => $userAccount->id],
