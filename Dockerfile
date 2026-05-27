@@ -1,4 +1,4 @@
-FROM php:8.2-fpm
+FROM php:8.2
 
 ARG DEBIAN_FRONTEND=noninteractive
 
@@ -21,13 +21,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         libicu-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Node.js (required for building assets)
+# Install Node.js
 RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
     apt-get install -y nodejs
 
 # Install PHP extensions
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install -j1 gd pdo_mysql zip mbstring exif bcmath intl curl
+    && docker-php-ext-install -j$(nproc) gd pdo_mysql zip mbstring exif bcmath intl curl
 
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
@@ -37,22 +37,16 @@ WORKDIR /var/www
 # Copy application files
 COPY . .
 
-# Install PHP dependencies
-RUN composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist --no-progress
-
-# Install Node dependencies and build frontend assets
+# Install dependencies
+RUN composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
 RUN npm install && npm run build
 
-# Create necessary directories and set permissions
-RUN mkdir -p storage/framework/{sessions,views,cache} \
-    && mkdir -p bootstrap/cache \
+# Permissions
+RUN mkdir -p storage/framework/{sessions,views,cache} bootstrap/cache \
     && chown -R www-data:www-data storage bootstrap/cache \
     && chmod -R 775 storage bootstrap/cache
 
-EXPOSE 10000
-
-# Runtime: start the app quickly so Render can serve the login page and assets.
-# Added migrate --force before seeding to ensure tables exist
-CMD php artisan migrate --force && \
-    php artisan db:seed --force --no-interaction && \
+# Startup script to handle migrations and serve
+CMD php artisan migrate --force || echo "Migration failed, skipping..." && \
+    php artisan db:seed --force --no-interaction || echo "Seeding failed, skipping..." && \
     php artisan serve --host=0.0.0.0 --port=${PORT:-10000}
