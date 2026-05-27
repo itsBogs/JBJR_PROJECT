@@ -109,7 +109,7 @@ $(document).ready(function() {
         const silent = options.silent || false;
 
         if (!silent) {
-            $('#main-content').css('opacity', '0.5');
+            $('#main-content').stop().animate({ opacity: 0.4 }, 150);
         }
 
         $.ajax({
@@ -118,7 +118,7 @@ $(document).ready(function() {
             dataType: 'json',
             success: function(response) {
                 if (response.html) {
-                    $('#main-content').html(response.html).css('opacity', '1');
+                    $('#main-content').stop().animate({ opacity: 1 }, 150).html(response.html);
                     if (pushState) {
                         window.history.pushState({path: url}, response.title || '', url);
                     }

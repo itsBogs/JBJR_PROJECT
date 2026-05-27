@@ -3,7 +3,7 @@
 @section('title', 'Student Dashboard')
 
 @section('content')
-<div data-live-refresh="true" data-refresh-interval="4000" style="display: grid; grid-template-columns: 1fr; gap: 20px;">
+<div data-live-refresh="true" data-refresh-interval="10000" style="display: grid; grid-template-columns: 1fr; gap: 20px;">
     <!-- Panel 1: Overview -->
     <div class="panel">
         <h2 style="margin:0;">Student Dashboard</h2>

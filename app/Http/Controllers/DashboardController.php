@@ -22,7 +22,7 @@ class DashboardController extends Controller
 
     public function student()
     {
-        $student = Auth::user()->student?->load('degree');
+        $student = Auth::user()->student;
         $courseCount = Course::count();
         $degreeCount = Degree::count();
 
@@ -39,9 +39,10 @@ class DashboardController extends Controller
         $studentCount = Student::count();
         $courseCount = Course::count();
         $postCount = Post::count();
-        $recentStudents = Student::with('degree')->latest()->take(5)->get();
-        $students = Student::with(['degree', 'userAccount'])
+        
+        $students = Student::with(['degree'])
             ->latest()
+            ->take(10)
             ->get();
 
         return $this->renderAjaxOrView('dashboards.teacher', [
@@ -49,7 +50,6 @@ class DashboardController extends Controller
             'studentCount' => $studentCount,
             'courseCount' => $courseCount,
             'postCount' => $postCount,
-            'recentStudents' => $recentStudents,
             'students' => $students
         ]);
     }
@@ -58,25 +58,25 @@ class DashboardController extends Controller
     {
         $studentCount = Student::count();
         $teacherCount = UserAccount::where('role', 'teacher')->count();
-        $adminCount = UserAccount::where('role', 'admin')->count();
         $userCount = UserAccount::count();
         $courseCount = Course::count();
-        $degreeCount = Degree::count();
+        
         $teachers = UserAccount::where('role', 'teacher')
             ->latest()
+            ->take(5)
             ->get();
-        $students = Student::with(['degree', 'userAccount'])
+            
+        $students = Student::with(['degree'])
             ->latest()
+            ->take(5)
             ->get();
 
         return $this->renderAjaxOrView('dashboards.admin', [
             'title' => 'Admin Dashboard',
             'studentCount' => $studentCount,
             'teacherCount' => $teacherCount,
-            'adminCount' => $adminCount,
             'userCount' => $userCount,
             'courseCount' => $courseCount,
-            'degreeCount' => $degreeCount,
             'teachers' => $teachers,
             'students' => $students
         ]);

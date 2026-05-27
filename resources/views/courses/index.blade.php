@@ -3,7 +3,7 @@
 @section('title', 'Courses')
 
 @section('content')
-<div class="panel" data-live-refresh="true" data-refresh-interval="4000">
+<div class="panel" data-live-refresh="true" data-refresh-interval="10000">
     <div style="display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;">
         <div>
             <h2 style="margin:0;">Courses</h2>

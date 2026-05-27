@@ -34,7 +34,7 @@
     </div>
 </div>
 
-<div data-live-refresh="true" data-refresh-interval="4000" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; align-items: start;">
+<div data-live-refresh="true" data-refresh-interval="10000" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; align-items: start;">
     <!-- Panel 1: Overview and Actions -->
     <div class="panel" style="margin-bottom:0; height: 100%;">
         <h2 style="margin:0;">Management</h2>

@@ -14,7 +14,7 @@
 	}
 @endphp
 
-<div class="panel" data-live-refresh="true" data-refresh-interval="4000">
+<div class="panel" data-live-refresh="true" data-refresh-interval="10000">
 	<div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">
 		<div>
 			<h2 style="margin:0;">Student Details</h2>

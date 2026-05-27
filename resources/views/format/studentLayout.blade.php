@@ -143,6 +143,7 @@
 			margin: 22px auto;
 			padding: 0 24px 40px;
 			flex: 1;
+			transition: opacity 0.3s ease-in-out;
 		}
 
 		.panel {
