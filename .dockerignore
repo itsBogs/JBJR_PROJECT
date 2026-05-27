@@ -11,5 +11,3 @@
 /storage/logs/*
 Dockerfile
 .phpunit.result.cache
-composer.lock
-package-lock.json
