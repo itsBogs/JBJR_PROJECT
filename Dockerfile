@@ -23,35 +23,37 @@ RUN apt-get update && apt-get install -y \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install pdo_mysql mbstring exif gd zip
 
-# Enable Apache mod_rewrite
+# Apache Configuration
 RUN a2enmod rewrite
+RUN echo "ServerName localhost" >> /etc/apache2/apache2.conf
+
+# Set DocumentRoot to /var/www/html/public
+ENV APACHE_DOCUMENT_ROOT /var/www/html/public
+RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/000-default.conf
+RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf
 
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 WORKDIR /var/www/html
 
-# Copy Project Files
+# Copy application files
 COPY . .
 
-# Copy Built Assets from Node Stage to reduce memory usage
+# Copy built assets from Stage 1
 COPY --from=node-builder /app/public/build ./public/build
 
-# Set Apache DocumentRoot to public
-ENV APACHE_DOCUMENT_ROOT /var/www/html/public
-RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/000-default.conf
-RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf
-
-# Install dependencies (Optimized)
+# Install PHP dependencies
 RUN composer install --no-dev --optimize-autoloader --no-interaction
 
 # Permissions
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache \
     && chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
 
-# Final Startup Fix: Ensure Apache port environment is handled correctly
-RUN echo "Listen 10000" > /etc/apache2/ports.conf
-RUN sed -i 's/*:80/*:10000/g' /etc/apache2/sites-available/000-default.conf
+# Port configuration: Use $PORT provided by Render
+RUN sed -i 's/80/${PORT}/g' /etc/apache2/ports.conf /etc/apache2/sites-available/000-default.conf
 
-# Startup command
-CMD php artisan config:clear && apache2-foreground
+# Ensure config is ready at runtime
+CMD php artisan config:clear && \
+    php artisan view:clear && \
+    apache2-foreground
