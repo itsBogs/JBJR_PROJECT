@@ -1,51 +1,54 @@
-# Stage 1: Build Assets
-FROM node:20 AS node-builder
-WORKDIR /app
-COPY package*.json ./
-RUN npm install
-COPY . .
-RUN npm run build
+# FROM php:8.2-cli​
 
-# Stage 2: PHP Application
-FROM php:8.4-cli
+FROM php:8.4-fpm​
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y \
-    git \
-    unzip \
-    curl \
-    libzip-dev \
-    zip \
-    libpng-dev \
-    libonig-dev \
-    libxml2-dev \
-    && apt-get clean && rm -rf /var/lib/apt/lists/*
+​
+​
 
-# Install PHP extensions
-RUN docker-php-ext-install pdo pdo_mysql zip mbstring exif pcntl bcmath gd
+RUN apt-get update && apt-get install -y \​
 
-# Install Composer
-COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+git unzip curl libzip-dev zip libpng-dev \​
 
-WORKDIR /var/www
+&& docker-php-ext-install pdo pdo_mysql zip​
 
-# Copy application files
-COPY . .
+​
+​
 
-# Copy built assets from node-builder
-COPY --from=node-builder /app/public/build ./public/build
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer​
 
-# Install PHP dependencies
-RUN composer install --no-dev --optimize-autoloader
+​
+​
 
-# Set permissions
-RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
+WORKDIR /var/www​
 
-# Environment setup
-RUN cp .env.example .env
-RUN php artisan key:generate
+​
+​
 
-EXPOSE 10000
+COPY . .​
 
-# Start command: Migrate and Serve
-CMD ["sh", "-c", "php artisan migrate --force && php artisan serve --host=0.0.0.0 --port=${PORT:-10000}"]
+​
+​
+
+RUN composer install --no-dev --optimize-autoloader​
+
+​
+​
+
+RUN cp .env.example .env​
+
+​
+​
+
+RUN php artisan key:generate​
+
+​
+​
+
+EXPOSE 10000​
+
+​
+​
+
+# CMD php artisan serve --host=0.0.0.0 --port=10000​
+
+CMD php artisan migrate --force && php artisan serve --host=0.0.0.0 --port=$PORT​
